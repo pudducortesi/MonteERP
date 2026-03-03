@@ -156,7 +156,7 @@ export function DealForm({ open, onOpenChange, deal, onSaved }: DealFormProps) {
         .select("id")
         .single();
 
-      // Add current user as lead
+      // Add current user as lead + log activity
       if (newDeal) {
         const {
           data: { user },
@@ -166,6 +166,13 @@ export function DealForm({ open, onOpenChange, deal, onSaved }: DealFormProps) {
             deal_id: newDeal.id,
             user_id: user.id,
             role_in_deal: "lead",
+          });
+          await supabase.from("activities").insert({
+            deal_id: newDeal.id,
+            user_id: user.id,
+            activity_type: "note",
+            title: `Deal "${title}" creato`,
+            metadata: { action: "deal_created", deal_code: code },
           });
         }
       }
