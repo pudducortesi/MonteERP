@@ -182,3 +182,12 @@ export interface Task {
   created_at: string;
   updated_at: string;
 }
+
+// ────────────────────────────────────────────────────────────
+// Composite / Joined Types
+// ────────────────────────────────────────────────────────────
+
+export interface DealWithRelations extends Deal {
+  company?: Company | null;
+  deal_members?: (DealMember & { user?: User })[];
+}
