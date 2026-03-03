@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { Menu, Bell, Search, LogOut, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,9 +25,10 @@ const roleLabels: Record<string, string> = {
 interface HeaderProps {
   user: User;
   onMenuClick: () => void;
+  onSearchClick: () => void;
 }
 
-export function Header({ user, onMenuClick }: HeaderProps) {
+export function Header({ user, onMenuClick, onSearchClick }: HeaderProps) {
   const router = useRouter();
 
   async function handleLogout() {
@@ -58,17 +58,18 @@ export function Header({ user, onMenuClick }: HeaderProps) {
         <span className="sr-only">Apri menu</span>
       </Button>
 
-      {/* Search */}
-      <div className="flex-1 max-w-md">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Cerca deal, aziende, contatti..."
-            className="pl-9 bg-[#F5F3EF] border-0 focus-visible:ring-1 focus-visible:ring-[#1B2A4A]"
-          />
-        </div>
-      </div>
+      {/* Search trigger */}
+      <button
+        onClick={onSearchClick}
+        className="flex-1 max-w-md flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F5F3EF] text-sm text-muted-foreground hover:bg-[#ebe8e1] transition-colors cursor-pointer"
+      >
+        <Search className="h-4 w-4 shrink-0" />
+        <span className="hidden sm:inline">Cerca deal, aziende, contatti...</span>
+        <span className="sm:hidden">Cerca...</span>
+        <kbd className="hidden md:inline-flex ml-auto items-center gap-0.5 rounded border bg-white px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+          <span className="text-xs">⌘</span>K
+        </kbd>
+      </button>
 
       <div className="flex items-center gap-2">
         {/* Notifications */}

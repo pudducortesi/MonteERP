@@ -17,6 +17,7 @@ import {
   DEAL_PRIORITY_COLORS,
   formatCurrency,
 } from "@/lib/utils/deal";
+import { Briefcase } from "lucide-react";
 import type { DealWithRelations } from "@/types";
 
 interface DealsTableProps {
@@ -27,16 +28,17 @@ export function DealsTable({ deals }: DealsTableProps) {
   if (deals.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-lg border">
+        <Briefcase className="h-10 w-10 text-muted-foreground/40 mb-3" />
         <p className="text-sm text-muted-foreground">Nessun deal trovato</p>
         <p className="text-xs text-muted-foreground mt-1">
-          Crea un nuovo deal per iniziare
+          Crea il primo deal per iniziare a gestire la pipeline
         </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border overflow-hidden">
+    <div className="bg-white rounded-lg border overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>

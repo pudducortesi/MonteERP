@@ -43,6 +43,8 @@
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
+  --font-serif: Georgia, "Times New Roman", Times, serif;
+  --color-gold: #C9A84C;
 }
 
 :root {

@@ -2,8 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { KanbanBoard } from "@/components/pipeline/KanbanBoard";
-import { DealsTable } from "@/components/pipeline/DealsTable";
+import dynamic from "next/dynamic";
+
+const KanbanBoard = dynamic(
+  () => import("@/components/pipeline/KanbanBoard").then((m) => m.KanbanBoard),
+  { ssr: false, loading: () => <Skeleton className="h-[400px] w-full" /> }
+);
+const DealsTable = dynamic(
+  () => import("@/components/pipeline/DealsTable").then((m) => m.DealsTable),
+  { loading: () => <Skeleton className="h-[400px] w-full" /> }
+);
 import { DealFilters } from "@/components/pipeline/DealFilters";
 import { DealForm } from "@/components/pipeline/DealForm";
 import { Skeleton } from "@/components/ui/skeleton";

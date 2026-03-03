@@ -107,7 +107,7 @@ export function DocumentList({
   }
 
   return (
-    <div className="bg-white rounded-lg border overflow-hidden">
+    <div className="bg-white rounded-lg border overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>

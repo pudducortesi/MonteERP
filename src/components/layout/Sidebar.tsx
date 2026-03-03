@@ -82,7 +82,9 @@ export function Sidebar({ userRole }: SidebarProps) {
       {/* Logo */}
       <div className="flex items-center h-16 px-6 border-b border-white/10">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold text-white">Montesino</span>
+          <span className="text-lg font-serif tracking-[0.25em] text-[#C9A84C] font-bold">
+            MONTESINO
+          </span>
         </Link>
       </div>
 
@@ -101,7 +103,7 @@ export function Sidebar({ userRole }: SidebarProps) {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-white/15 text-white"
+                  ? "bg-[#C9A84C]/20 text-[#C9A84C] border-l-2 border-[#C9A84C]"
                   : "text-white/70 hover:bg-white/10 hover:text-white"
               )}
             >
@@ -114,7 +116,7 @@ export function Sidebar({ userRole }: SidebarProps) {
 
       {/* Footer */}
       <div className="px-6 py-4 border-t border-white/10">
-        <p className="text-xs text-white/40">Montesino SpA</p>
+        <p className="text-xs text-[#C9A84C]/50">Montesino SpA</p>
       </div>
     </aside>
   );
