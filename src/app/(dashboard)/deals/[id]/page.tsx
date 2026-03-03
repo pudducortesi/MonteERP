@@ -11,6 +11,8 @@ import { DealForm } from "@/components/pipeline/DealForm";
 import { DealOverview } from "@/components/pipeline/DealOverview";
 import { DealTimeline } from "@/components/pipeline/DealTimeline";
 import { DealTeam } from "@/components/pipeline/DealTeam";
+import { DealDocuments } from "@/components/pipeline/DealDocuments";
+import { DealFee } from "@/components/pipeline/DealFee";
 import {
   DEAL_STATUS_LABELS,
   DEAL_PRIORITY_COLORS,
@@ -178,19 +180,11 @@ export default function DealDetailPage() {
         </TabsContent>
 
         <TabsContent value="documents">
-          <div className="bg-white rounded-lg border p-8 text-center">
-            <p className="text-muted-foreground text-sm">
-              Gestione documenti — disponibile nella Fase 3
-            </p>
-          </div>
+          <DealDocuments dealId={deal.id} />
         </TabsContent>
 
         <TabsContent value="fee">
-          <div className="bg-white rounded-lg border p-8 text-center">
-            <p className="text-muted-foreground text-sm">
-              Success Fee tracking — disponibile nella Fase 3
-            </p>
-          </div>
+          <DealFee deal={deal} />
         </TabsContent>
 
         <TabsContent value="tasks">
