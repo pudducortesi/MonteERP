@@ -66,7 +66,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           id: d.id,
           label: d.title,
           subtitle: d.code || undefined,
-          href: `/deals/${d.id}`,
+          href: `/pipeline/${d.id}`,
           type: "deal",
         });
       });
@@ -152,7 +152,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                 onSelect={() => handleSelect(item.href)}
                 className="cursor-pointer"
               >
-                <BarChart3 className="mr-2 h-4 w-4 text-[#C9A84C]" />
+                <BarChart3 className="mr-2 h-4 w-4 text-[#E87A2E]" />
                 <div className="flex flex-col">
                   <span className="text-sm">{item.label}</span>
                   {item.subtitle && (
@@ -175,7 +175,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                 onSelect={() => handleSelect(item.href)}
                 className="cursor-pointer"
               >
-                <Building2 className="mr-2 h-4 w-4 text-[#1B2A4A]" />
+                <Building2 className="mr-2 h-4 w-4 text-[#1A1A1A]" />
                 <div className="flex flex-col">
                   <span className="text-sm">{item.label}</span>
                   {item.subtitle && (
@@ -198,7 +198,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                 onSelect={() => handleSelect(item.href)}
                 className="cursor-pointer"
               >
-                <UserRound className="mr-2 h-4 w-4 text-[#1B2A4A]" />
+                <UserRound className="mr-2 h-4 w-4 text-[#1A1A1A]" />
                 <div className="flex flex-col">
                   <span className="text-sm">{item.label}</span>
                   {item.subtitle && (

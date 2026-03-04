@@ -57,7 +57,7 @@ export function DealFee({ deal }: DealFeeProps) {
           </p>
           <Button
             size="sm"
-            className="bg-[#1B2A4A] hover:bg-[#253A5E]"
+            className="bg-[#E87A2E] hover:bg-[#D16A1E] text-white"
             onClick={() => setFormOpen(true)}
           >
             <Plus className="h-4 w-4 mr-1" />
@@ -81,9 +81,9 @@ export function DealFee({ deal }: DealFeeProps) {
 
   return (
     <div className="space-y-4">
-      <Card className="bg-white border-0 shadow-sm">
+      <Card className="bg-white border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-base text-[#1B2A4A]">
+          <CardTitle className="text-base text-[#1A1A1A]">
             Success Fee
           </CardTitle>
           <Button
@@ -101,7 +101,7 @@ export function DealFee({ deal }: DealFeeProps) {
               <dt className="text-xs font-medium text-muted-foreground mb-0.5">
                 Valore Deal Finale
               </dt>
-              <dd className="text-sm font-medium text-[#1B2A4A]">
+              <dd className="text-sm font-medium text-[#1A1A1A]">
                 {formatCurrency(fee.deal_value_final)}
               </dd>
             </div>
@@ -135,7 +135,7 @@ export function DealFee({ deal }: DealFeeProps) {
               <dt className="text-xs font-medium text-muted-foreground mb-0.5">
                 Fee Concordata
               </dt>
-              <dd className="text-lg font-bold text-[#1B2A4A]">
+              <dd className="text-lg font-bold text-[#1A1A1A]">
                 {formatCurrency(fee.fee_agreed)}
               </dd>
             </div>

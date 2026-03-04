@@ -27,14 +27,14 @@ export function MobileNav({ open, onOpenChange, userRole }: MobileNavProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-72 bg-[#1B2A4A] text-white p-0 border-r-0">
-        <SheetHeader className="px-6 h-16 flex justify-center border-b border-white/10">
-          <SheetTitle className="text-lg font-serif tracking-[0.25em] text-[#C9A84C] font-bold">
+      <SheetContent side="left" className="w-72 bg-white p-0 border-r border-[#E5E7EB]">
+        <SheetHeader className="px-6 h-16 flex justify-center border-b border-[#E5E7EB]">
+          <SheetTitle className="text-lg font-semibold tracking-[0.15em] text-[#E87A2E]">
             MONTESINO
           </SheetTitle>
         </SheetHeader>
 
-        <nav className="px-3 py-4 space-y-1">
+        <nav className="px-3 py-4 space-y-0.5">
           {filteredItems.map((item) => {
             const isActive =
               item.href === "/"
@@ -47,21 +47,24 @@ export function MobileNav({ open, onOpenChange, userRole }: MobileNavProps) {
                 href={item.href}
                 onClick={() => onOpenChange(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 relative",
                   isActive
-                    ? "bg-[#C9A84C]/20 text-[#C9A84C] border-l-2 border-[#C9A84C]"
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                    ? "text-[#E87A2E] bg-[#E87A2E]/5 font-medium"
+                    : "text-[#6B7280] hover:bg-gray-100 hover:text-[#1A1A1A] font-normal"
                 )}
               >
-                <item.icon className="h-5 w-5 shrink-0" />
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#E87A2E] rounded-r-full" />
+                )}
+                <item.icon className="h-[18px] w-[18px] shrink-0" />
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 px-6 py-4 border-t border-white/10">
-          <p className="text-xs text-[#C9A84C]/50">Montesino SpA</p>
+        <div className="absolute bottom-0 left-0 right-0 px-6 py-4 border-t border-[#E5E7EB]">
+          <p className="text-xs text-[#9CA3AF]">Montesino S.p.A. Società Benefit</p>
         </div>
       </SheetContent>
     </Sheet>

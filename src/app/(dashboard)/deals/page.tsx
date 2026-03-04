@@ -66,14 +66,14 @@ export default function DealsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1B2A4A]">Deal</h1>
+          <h1 className="text-2xl font-bold text-[#1A1A1A]">Deal</h1>
           <p className="text-sm text-muted-foreground">
             {deals.length} deal totali
           </p>
         </div>
         <Button
           size="sm"
-          className="bg-[#1B2A4A] hover:bg-[#253A5E]"
+          className="bg-[#E87A2E] hover:bg-[#D16A1E]"
           onClick={() => setFormOpen(true)}
         >
           <Plus className="h-4 w-4 mr-1" />

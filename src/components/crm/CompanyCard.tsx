@@ -17,9 +17,9 @@ export function CompanyCard({ company, onEdit }: CompanyCardProps) {
     .join(", ");
 
   return (
-    <Card className="bg-white border-0 shadow-sm">
+    <Card className="bg-white border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="text-base text-[#1B2A4A]">
+        <CardTitle className="text-base text-[#1A1A1A]">
           Dati Azienda
         </CardTitle>
         <Button variant="outline" size="sm" onClick={onEdit}>
@@ -33,7 +33,7 @@ export function CompanyCard({ company, onEdit }: CompanyCardProps) {
             <dt className="text-xs font-medium text-muted-foreground mb-0.5">
               Nome
             </dt>
-            <dd className="text-sm text-[#1B2A4A] font-medium">
+            <dd className="text-sm text-[#1A1A1A] font-medium">
               {company.name}
             </dd>
           </div>
@@ -63,7 +63,7 @@ export function CompanyCard({ company, onEdit }: CompanyCardProps) {
             </dt>
             <dd className="text-sm">
               {company.website ? (
-                <span className="text-[#1B2A4A] break-all">
+                <span className="text-[#1A1A1A] break-all">
                   {company.website}
                 </span>
               ) : (

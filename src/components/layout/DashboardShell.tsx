@@ -18,8 +18,8 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar userRole={user.role} />
+    <div className="flex min-h-screen bg-white">
+      <Sidebar userRole={user.role} user={user} />
       <MobileNav
         open={mobileOpen}
         onOpenChange={setMobileOpen}
@@ -32,11 +32,11 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
           onMenuClick={() => setMobileOpen(true)}
           onSearchClick={() => setSearchOpen(true)}
         />
-        <main className="flex-1 bg-[#F5F3EF] p-4 lg:p-6">{children}</main>
+        <main className="flex-1 bg-[#FAFAFA] p-4 lg:p-6">{children}</main>
       </div>
 
       <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
-      <Toaster position="top-right" />
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

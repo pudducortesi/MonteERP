@@ -143,7 +143,7 @@ export default function CompanyDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-[#1B2A4A]">
+          <h1 className="text-2xl font-bold text-[#1A1A1A]">
             {company.name}
           </h1>
           {company.sector && (
@@ -157,9 +157,9 @@ export default function CompanyDetailPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Contacts */}
-        <Card className="bg-white border-0 shadow-sm">
+        <Card className="bg-white border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-base text-[#1B2A4A]">
+            <CardTitle className="text-base text-[#1A1A1A]">
               Contatti ({contacts.length})
             </CardTitle>
             <Button
@@ -217,9 +217,9 @@ export default function CompanyDetailPage() {
         </Card>
 
         {/* Associated deals */}
-        <Card className="bg-white border-0 shadow-sm">
+        <Card className="bg-white border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base text-[#1B2A4A]">
+            <CardTitle className="text-base text-[#1A1A1A]">
               Deal Associati ({deals.length})
             </CardTitle>
           </CardHeader>
@@ -236,11 +236,11 @@ export default function CompanyDetailPage() {
                 {deals.map((deal) => (
                   <Link
                     key={deal.id}
-                    href={`/deals/${deal.id}`}
+                    href={`/pipeline/${deal.id}`}
                     className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
                   >
                     <div>
-                      <p className="text-sm font-medium text-[#1B2A4A]">
+                      <p className="text-sm font-medium text-[#1A1A1A]">
                         {deal.title}
                       </p>
                       <p className="text-xs text-muted-foreground">
@@ -266,9 +266,9 @@ export default function CompanyDetailPage() {
       </div>
 
       {/* Recent activities */}
-      <Card className="bg-white border-0 shadow-sm">
+      <Card className="bg-white border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base text-[#1B2A4A]">
+          <CardTitle className="text-base text-[#1A1A1A]">
             Attività Recenti
           </CardTitle>
         </CardHeader>
@@ -290,8 +290,8 @@ export default function CompanyDetailPage() {
                     key={activity.id}
                     className="flex items-start gap-3 p-3 rounded-lg bg-gray-50"
                   >
-                    <div className="flex items-center justify-center h-7 w-7 rounded-full bg-[#1B2A4A]/10 shrink-0 mt-0.5">
-                      <Icon className="h-3.5 w-3.5 text-[#1B2A4A]" />
+                    <div className="flex items-center justify-center h-7 w-7 rounded-full bg-[#E87A2E]/10 shrink-0 mt-0.5">
+                      <Icon className="h-3.5 w-3.5 text-[#1A1A1A]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm">{activity.title}</p>

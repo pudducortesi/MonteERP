@@ -100,14 +100,14 @@ export function DocumentList({
   if (documents.length === 0) {
     return (
       <div className="text-center py-8">
-        <FileText className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground">Nessun documento</p>
+        <FileText className="h-8 w-8 text-[#D1D5DB] mx-auto mb-2" />
+        <p className="text-sm text-[#9CA3AF]">Nessun documento</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border overflow-x-auto">
+    <div className="bg-white rounded-lg border border-[#E5E7EB] overflow-x-auto shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
       <Table>
         <TableHeader>
           <TableRow>
@@ -129,14 +129,14 @@ export function DocumentList({
               <TableRow key={doc.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="text-sm font-medium text-[#1B2A4A] truncate max-w-[200px]">
+                    <Icon className="h-4 w-4 text-[#6B7280] shrink-0" />
+                    <span className="text-sm font-medium text-[#1A1A1A] truncate max-w-[200px]">
                       {doc.name}
                     </span>
                   </div>
                 </TableCell>
                 {showDealColumn && (
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="text-sm text-[#6B7280]">
                     {doc.deal?.code || "—"}
                   </TableCell>
                 )}
@@ -148,13 +148,13 @@ export function DocumentList({
                 <TableCell className="text-center text-sm">
                   v{doc.version}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
+                <TableCell className="text-sm text-[#6B7280]">
                   {formatFileSize(doc.file_size)}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
+                <TableCell className="text-sm text-[#6B7280]">
                   {doc.uploader?.full_name || "—"}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
+                <TableCell className="text-sm text-[#6B7280]">
                   {new Date(doc.created_at).toLocaleDateString("it-IT", {
                     day: "2-digit",
                     month: "short",

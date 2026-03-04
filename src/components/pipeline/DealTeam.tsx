@@ -100,9 +100,9 @@ export function DealTeam({ dealId, members, onMemberChanged }: DealTeamProps) {
 
   return (
     <>
-      <Card className="bg-white border-0 shadow-sm">
+      <Card className="bg-white border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base text-[#1B2A4A]">
+          <CardTitle className="text-base text-[#1A1A1A]">
             Team del Deal
           </CardTitle>
           <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}>
@@ -138,7 +138,7 @@ export function DealTeam({ dealId, members, onMemberChanged }: DealTeamProps) {
                   >
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9">
-                        <AvatarFallback className="bg-[#1B2A4A] text-white text-xs">
+                        <AvatarFallback className="bg-[#E87A2E] text-white text-xs">
                           {initials}
                         </AvatarFallback>
                       </Avatar>
@@ -178,7 +178,7 @@ export function DealTeam({ dealId, members, onMemberChanged }: DealTeamProps) {
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[#1B2A4A]">
+            <DialogTitle className="text-[#1A1A1A]">
               Aggiungi Membro al Team
             </DialogTitle>
           </DialogHeader>
@@ -230,7 +230,7 @@ export function DealTeam({ dealId, members, onMemberChanged }: DealTeamProps) {
               <Button
                 onClick={handleAdd}
                 disabled={!selectedUserId || saving}
-                className="bg-[#1B2A4A] hover:bg-[#253A5E]"
+                className="bg-[#E87A2E] hover:bg-[#D16A1E]"
               >
                 {saving ? "Aggiunta..." : "Aggiungi"}
               </Button>
