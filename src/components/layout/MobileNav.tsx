@@ -10,32 +10,27 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/components/layout/Sidebar";
-import type { UserRole } from "@/types";
 
 interface MobileNavProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  userRole: UserRole;
+  userRole: string;
 }
 
-export function MobileNav({ open, onOpenChange, userRole }: MobileNavProps) {
+export function MobileNav({ open, onOpenChange }: MobileNavProps) {
   const pathname = usePathname();
-
-  const filteredItems = navItems.filter((item) =>
-    item.roles.includes(userRole)
-  );
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-72 bg-white p-0 border-r border-[#E5E7EB]">
         <SheetHeader className="px-6 h-16 flex justify-center border-b border-[#E5E7EB]">
-          <SheetTitle className="text-lg font-semibold tracking-[0.15em] text-[#E87A2E]">
-            MONTESINO
+          <SheetTitle className="text-lg font-semibold tracking-[0.12em] text-[#E87A2E]">
+            PUDDU CORTESI
           </SheetTitle>
         </SheetHeader>
 
         <nav className="px-3 py-4 space-y-0.5">
-          {filteredItems.map((item) => {
+          {navItems.map((item) => {
             const isActive =
               item.href === "/"
                 ? pathname === "/"
@@ -64,7 +59,7 @@ export function MobileNav({ open, onOpenChange, userRole }: MobileNavProps) {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 px-6 py-4 border-t border-[#E5E7EB]">
-          <p className="text-xs text-[#9CA3AF]">Montesino S.p.A. Società Benefit</p>
+          <p className="text-xs text-[#9CA3AF]">Gestionale Personale</p>
         </div>
       </SheetContent>
     </Sheet>
