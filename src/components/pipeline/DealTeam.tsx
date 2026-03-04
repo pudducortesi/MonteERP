@@ -100,7 +100,7 @@ export function DealTeam({ dealId, members, onMemberChanged }: DealTeamProps) {
 
   return (
     <>
-      <Card className="bg-white border-0 shadow-sm">
+      <Card className="bg-white border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base text-[#1A1A1A]">
             Team del Deal

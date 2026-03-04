@@ -81,7 +81,7 @@ export function DealFee({ deal }: DealFeeProps) {
 
   return (
     <div className="space-y-4">
-      <Card className="bg-white border-0 shadow-sm">
+      <Card className="bg-white border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-base text-[#1A1A1A]">
             Success Fee
