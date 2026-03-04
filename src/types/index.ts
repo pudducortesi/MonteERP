@@ -278,3 +278,75 @@ export interface TaskWithRelations extends Task {
   deal?: Deal | null;
   assigned_user?: User | null;
 }
+
+// ────────────────────────────────────────────────────────────
+// Personal Finance Types
+// ────────────────────────────────────────────────────────────
+
+export type AccountEntity = "piva" | "spa";
+export type AccountType = "checking" | "credit_card" | "investment";
+export type TransactionType = "expense" | "income" | "transfer";
+export type InvestmentCategory = "immobili" | "titoli" | "crypto" | "liquidita" | "altro";
+
+export interface Account {
+  id: string;
+  user_id: string;
+  name: string;
+  bank: string;
+  entity: AccountEntity;
+  account_type: AccountType;
+  balance: number;
+  color: string | null;
+  sort_order: number;
+  is_active: boolean;
+  updated_at: string;
+  created_at: string;
+}
+
+export interface Transaction {
+  id: string;
+  user_id: string;
+  account_id: string | null;
+  amount: number;
+  type: TransactionType;
+  category: string | null;
+  description: string | null;
+  date: string;
+  created_at: string;
+}
+
+export interface Investment {
+  id: string;
+  user_id: string;
+  name: string;
+  category: InvestmentCategory;
+  current_value: number;
+  purchase_value: number;
+  purchase_date: string | null;
+  notes: string | null;
+  updated_at: string;
+  created_at: string;
+}
+
+export interface MonthlySummary {
+  id: string;
+  user_id: string;
+  month: string;
+  year: number;
+  month_number: number;
+  income: number;
+  expenses: number;
+  fee_earned: number;
+  entity: string | null;
+  created_at: string;
+}
+
+export interface ExpenseCategory {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  icon: string | null;
+  sort_order: number;
+  created_at: string;
+}
