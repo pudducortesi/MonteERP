@@ -22,6 +22,7 @@ import type {
   DealStatus,
   DealType,
   DealPriority,
+  PracticeArea,
   User,
 } from "@/types";
 
@@ -31,13 +32,11 @@ export default function PipelinePage() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"kanban" | "table">("kanban");
   const [showArchived, setShowArchived] = useState(false);
-  const [dealTypeFilter, setDealTypeFilter] = useState<DealType | "all">(
-    "all"
-  );
-  const [priorityFilter, setPriorityFilter] = useState<DealPriority | "all">(
-    "all"
-  );
+  const [dealTypeFilter, setDealTypeFilter] = useState<DealType | "all">("all");
+  const [priorityFilter, setPriorityFilter] = useState<DealPriority | "all">("all");
+  const [practiceAreaFilter, setPracticeAreaFilter] = useState<PracticeArea | "all">("all");
   const [advisorFilter, setAdvisorFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
 
   const supabase = createClient();
@@ -45,8 +44,7 @@ export default function PipelinePage() {
   const fetchDeals = useCallback(async () => {
     const { data } = await supabase
       .from("deals")
-      .select(
-        `
+      .select(`
         *,
         company:companies(id, name),
         deal_members(
@@ -56,8 +54,7 @@ export default function PipelinePage() {
           joined_at,
           user:users(id, full_name, avatar_url)
         )
-      `
-      )
+      `)
       .order("updated_at", { ascending: false });
 
     if (data) {
@@ -88,7 +85,6 @@ export default function PipelinePage() {
 
     const oldStatus = deal.status;
 
-    // Optimistic update
     setDeals((prev) =>
       prev.map((d) => (d.id === dealId ? { ...d, status: newStatus } : d))
     );
@@ -99,7 +95,6 @@ export default function PipelinePage() {
       .eq("id", dealId);
 
     if (error) {
-      // Revert on error
       setDeals((prev) =>
         prev.map((d) => (d.id === dealId ? { ...d, status: oldStatus } : d))
       );
@@ -107,10 +102,7 @@ export default function PipelinePage() {
       return;
     }
 
-    // Log activity
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
       await supabase.from("activities").insert({
@@ -122,22 +114,24 @@ export default function PipelinePage() {
       });
     }
 
-    toast.success(
-      `Deal spostato in ${DEAL_STATUS_LABELS[newStatus]}`
-    );
+    toast.success(`Deal spostato in ${DEAL_STATUS_LABELS[newStatus]}`);
   }
 
-  // Apply filters
   const filteredDeals = deals.filter((deal) => {
-    if (dealTypeFilter !== "all" && deal.deal_type !== dealTypeFilter)
-      return false;
-    if (priorityFilter !== "all" && deal.priority !== priorityFilter)
-      return false;
+    if (dealTypeFilter !== "all" && deal.deal_type !== dealTypeFilter) return false;
+    if (priorityFilter !== "all" && deal.priority !== priorityFilter) return false;
+    if (practiceAreaFilter !== "all" && deal.practice_area !== practiceAreaFilter) return false;
     if (advisorFilter !== "all") {
-      const hasMember = deal.deal_members?.some(
-        (m) => m.user_id === advisorFilter
-      );
+      const hasMember = deal.deal_members?.some((m) => m.user_id === advisorFilter);
       if (!hasMember) return false;
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const match =
+        deal.title.toLowerCase().includes(q) ||
+        deal.code?.toLowerCase().includes(q) ||
+        deal.company?.name?.toLowerCase().includes(q);
+      if (!match) return false;
     }
     return true;
   });
@@ -145,6 +139,7 @@ export default function PipelinePage() {
   if (loading) {
     return (
       <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
         <Skeleton className="h-10 w-full" />
         <div className="flex gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -157,9 +152,9 @@ export default function PipelinePage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-[#1B2A4A]">Pipeline M&A</h1>
-        <p className="text-sm text-muted-foreground">
+      <div className="animate-fade-in">
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">Pipeline</h1>
+        <p className="text-sm text-[#6B7280]">
           {deals.length} deal in pipeline
         </p>
       </div>
@@ -173,9 +168,13 @@ export default function PipelinePage() {
         onDealTypeFilterChange={setDealTypeFilter}
         priorityFilter={priorityFilter}
         onPriorityFilterChange={setPriorityFilter}
+        practiceAreaFilter={practiceAreaFilter}
+        onPracticeAreaFilterChange={setPracticeAreaFilter}
         advisorFilter={advisorFilter}
         onAdvisorFilterChange={setAdvisorFilter}
         advisors={advisors}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
         onNewDeal={() => setFormOpen(true)}
       />
 

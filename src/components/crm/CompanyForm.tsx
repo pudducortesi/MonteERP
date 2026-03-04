@@ -42,6 +42,10 @@ export function CompanyForm({
   const [provincia, setProvincia] = useState("");
   const [paese, setPaese] = useState("");
   const [notes, setNotes] = useState("");
+  const [revenue, setRevenue] = useState("");
+  const [ebitda, setEbitda] = useState("");
+  const [netDebt, setNetDebt] = useState("");
+  const [fiscalYear, setFiscalYear] = useState("");
 
   useEffect(() => {
     if (company) {
@@ -56,6 +60,10 @@ export function CompanyForm({
       setProvincia(company.address?.provincia || "");
       setPaese(company.address?.paese || "");
       setNotes(company.notes || "");
+      setRevenue(company.revenue?.toString() || "");
+      setEbitda(company.ebitda?.toString() || "");
+      setNetDebt(company.net_debt?.toString() || "");
+      setFiscalYear(company.fiscal_year?.toString() || "");
     } else {
       setName("");
       setSector("");
@@ -68,6 +76,10 @@ export function CompanyForm({
       setProvincia("");
       setPaese("");
       setNotes("");
+      setRevenue("");
+      setEbitda("");
+      setNetDebt("");
+      setFiscalYear("");
     }
   }, [company]);
 
@@ -82,7 +94,7 @@ export function CompanyForm({
         ? { via, citta, cap, provincia, paese }
         : null;
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       name,
       sector: sector || null,
       revenue_range: revenueRange || null,
@@ -90,6 +102,10 @@ export function CompanyForm({
       website: website || null,
       address,
       notes: notes || null,
+      revenue: revenue ? parseFloat(revenue) : null,
+      ebitda: ebitda ? parseFloat(ebitda) : null,
+      net_debt: netDebt ? parseFloat(netDebt) : null,
+      fiscal_year: fiscalYear ? parseInt(fiscalYear) : null,
     };
 
     if (isEdit) {
@@ -122,7 +138,7 @@ export function CompanyForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-[#1B2A4A]">
+          <DialogTitle className="text-[#1A1A1A]">
             {isEdit ? "Modifica Azienda" : "Nuova Azienda"}
           </DialogTitle>
         </DialogHeader>
@@ -182,9 +198,61 @@ export function CompanyForm({
             </div>
           </div>
 
+          {/* Financial data */}
+          <div>
+            <Label className="text-xs text-[#6B7280] uppercase tracking-wider">
+              Dati Finanziari
+            </Label>
+            <div className="grid grid-cols-2 gap-3 mt-1">
+              <div>
+                <Label htmlFor="revenue" className="text-xs">Revenue (€)</Label>
+                <Input
+                  id="revenue"
+                  type="number"
+                  step="0.01"
+                  value={revenue}
+                  onChange={(e) => setRevenue(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <Label htmlFor="ebitda" className="text-xs">EBITDA (€)</Label>
+                <Input
+                  id="ebitda"
+                  type="number"
+                  step="0.01"
+                  value={ebitda}
+                  onChange={(e) => setEbitda(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <Label htmlFor="netDebt" className="text-xs">Debito Netto (€)</Label>
+                <Input
+                  id="netDebt"
+                  type="number"
+                  step="0.01"
+                  value={netDebt}
+                  onChange={(e) => setNetDebt(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <Label htmlFor="fiscalYear" className="text-xs">Anno Fiscale</Label>
+                <Input
+                  id="fiscalYear"
+                  type="number"
+                  value={fiscalYear}
+                  onChange={(e) => setFiscalYear(e.target.value)}
+                  placeholder="2024"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Address */}
           <div>
-            <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+            <Label className="text-xs text-[#6B7280] uppercase tracking-wider">
               Indirizzo
             </Label>
             <div className="grid grid-cols-1 gap-2 mt-1">
@@ -240,7 +308,7 @@ export function CompanyForm({
             <Button
               type="submit"
               disabled={loading || !name}
-              className="bg-[#1B2A4A] hover:bg-[#253A5E]"
+              className="bg-[#E87A2E] hover:bg-[#D16A1E] text-white"
             >
               {loading
                 ? "Salvataggio..."

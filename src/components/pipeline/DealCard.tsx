@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { Draggable } from "@hello-pangea/dnd";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   DEAL_PRIORITY_COLORS,
-  DEAL_PRIORITY_LABELS,
-  formatCurrency,
+  PRACTICE_AREA_LABELS,
+  PRACTICE_AREA_COLORS,
+  formatCurrencyCompact,
   daysInStage,
 } from "@/lib/utils/deal";
 import type { DealWithRelations } from "@/types";
@@ -31,42 +33,54 @@ export function DealCard({ deal, index }: DealCardProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "bg-white rounded-lg border border-gray-200 p-3 shadow-sm transition-shadow",
-            snapshot.isDragging && "shadow-lg ring-2 ring-[#1B2A4A]/20"
+            "bg-white rounded-lg border border-[#E5E7EB] p-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 hover:shadow-md",
+            snapshot.isDragging && "shadow-lg ring-2 ring-[#E87A2E]/20"
           )}
         >
-          <Link href={`/deals/${deal.id}`} className="block space-y-2">
-            {/* Header: code + priority */}
+          <Link href={`/pipeline/${deal.id}`} className="block space-y-2">
+            {/* Header: code + priority dot */}
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-muted-foreground">
+              <span className="text-[11px] font-mono text-[#9CA3AF]">
                 {deal.code || "—"}
               </span>
-              <span
+              <div
                 className={cn(
-                  "text-[10px] font-semibold px-1.5 py-0.5 rounded",
+                  "h-2 w-2 rounded-full",
                   DEAL_PRIORITY_COLORS[deal.priority]
                 )}
-              >
-                {DEAL_PRIORITY_LABELS[deal.priority]}
-              </span>
+                title={deal.priority}
+              />
             </div>
 
             {/* Title */}
-            <p className="text-sm font-medium text-[#1B2A4A] leading-tight line-clamp-2">
+            <p className="text-sm font-medium text-[#1A1A1A] leading-tight line-clamp-2">
               {deal.title}
             </p>
 
             {/* Company */}
             {deal.company && (
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-[#6B7280] truncate">
                 {deal.company.name}
               </p>
             )}
 
+            {/* Practice Area badge */}
+            {deal.practice_area && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-[10px] px-1.5 py-0 h-4 font-normal",
+                  PRACTICE_AREA_COLORS[deal.practice_area]
+                )}
+              >
+                {PRACTICE_AREA_LABELS[deal.practice_area]}
+              </Badge>
+            )}
+
             {/* Value */}
             {deal.deal_value != null && (
-              <p className="text-sm font-semibold text-[#1B2A4A]">
-                {formatCurrency(deal.deal_value)}
+              <p className="text-sm font-semibold text-[#1A1A1A]">
+                {formatCurrencyCompact(deal.deal_value)}
               </p>
             )}
 
@@ -85,7 +99,7 @@ export function DealCard({ deal, index }: DealCardProps) {
                     : "?";
                   return (
                     <Avatar key={m.user_id} className="h-6 w-6 border-2 border-white">
-                      <AvatarFallback className="text-[9px] bg-[#1B2A4A] text-white">
+                      <AvatarFallback className="text-[9px] bg-[#E87A2E] text-white">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
@@ -93,13 +107,13 @@ export function DealCard({ deal, index }: DealCardProps) {
                 })}
                 {extraCount > 0 && (
                   <Avatar className="h-6 w-6 border-2 border-white">
-                    <AvatarFallback className="text-[9px] bg-gray-200 text-gray-600">
+                    <AvatarFallback className="text-[9px] bg-[#F3F4F6] text-[#6B7280]">
                       +{extraCount}
                     </AvatarFallback>
                   </Avatar>
                 )}
               </div>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[10px] text-[#9CA3AF]">
                 {days}g
               </span>
             </div>

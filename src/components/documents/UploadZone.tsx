@@ -113,16 +113,16 @@ export function UploadZone({
           border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
           ${
             dragOver
-              ? "border-[#1B2A4A] bg-[#1B2A4A]/5"
-              : "border-gray-200 hover:border-gray-300 bg-gray-50"
+              ? "border-[#E87A2E] bg-[#E87A2E]/5"
+              : "border-[#E5E7EB] hover:border-[#D1D5DB] bg-[#FAFAFA]"
           }
         `}
       >
-        <Upload className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-        <p className="text-sm font-medium text-[#1B2A4A]">
+        <Upload className="h-8 w-8 text-[#D1D5DB] mx-auto mb-2" />
+        <p className="text-sm font-medium text-[#1A1A1A]">
           Trascina un file qui o clicca per selezionare
         </p>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-[#9CA3AF] mt-1">
           PDF, documenti, immagini fino a 50MB
         </p>
         <input
@@ -136,14 +136,14 @@ export function UploadZone({
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[#1B2A4A]">
+            <DialogTitle className="text-[#1A1A1A]">
               Carica Documento
             </DialogTitle>
           </DialogHeader>
 
           {selectedFile && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-              <FileText className="h-5 w-5 text-[#1B2A4A] shrink-0" />
+              <FileText className="h-5 w-5 text-[#1A1A1A] shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">
                   {selectedFile.name}
@@ -236,7 +236,7 @@ export function UploadZone({
               <Button
                 onClick={handleUpload}
                 disabled={uploading || !dealId}
-                className="bg-[#1B2A4A] hover:bg-[#253A5E]"
+                className="bg-[#E87A2E] hover:bg-[#D16A1E]"
               >
                 {uploading ? (
                   <>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Phone,
   Users,
@@ -8,8 +9,14 @@ import {
   ArrowRightLeft,
   Upload,
   Clock,
+  Send,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
+import { formatRelativeTime } from "@/lib/utils/deal";
 import type { Activity, ActivityType, User } from "@/types";
 
 const activityIcons: Record<ActivityType, React.ComponentType<{ className?: string }>> = {
@@ -32,80 +39,107 @@ const activityLabels: Record<ActivityType, string> = {
 
 interface DealTimelineProps {
   activities: (Activity & { user?: User })[];
+  dealId?: string;
+  onActivityAdded?: () => void;
 }
 
-function formatDateTime(d: string): string {
-  return new Date(d).toLocaleDateString("it-IT", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+export function DealTimeline({ activities, dealId, onActivityAdded }: DealTimelineProps) {
+  const [noteContent, setNoteContent] = useState("");
+  const [adding, setAdding] = useState(false);
+  const supabase = createClient();
 
-export function DealTimeline({ activities }: DealTimelineProps) {
-  if (activities.length === 0) {
-    return (
-      <Card className="bg-white border-0 shadow-sm">
-        <CardContent className="py-12 text-center">
-          <Clock className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">
-            Nessuna attività registrata
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Le attività appariranno qui quando verranno create
-          </p>
-        </CardContent>
-      </Card>
-    );
+  async function addNote() {
+    if (!noteContent.trim() || !dealId) return;
+    setAdding(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { error } = await supabase.from("activities").insert({
+        deal_id: dealId,
+        user_id: user.id,
+        activity_type: "note",
+        title: noteContent.trim(),
+      });
+      if (error) {
+        toast.error("Errore nel salvataggio della nota");
+      } else {
+        toast.success("Nota aggiunta");
+        setNoteContent("");
+        onActivityAdded?.();
+      }
+    }
+    setAdding(false);
   }
 
   return (
-    <Card className="bg-white border-0 shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-base text-[#1B2A4A]">
-          Timeline Attività
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="bg-white rounded-lg border border-[#E5E7EB] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+      {/* Quick add note */}
+      {dealId && (
+        <div className="mb-5 pb-5 border-b border-[#F3F4F6]">
+          <Textarea
+            value={noteContent}
+            onChange={(e) => setNoteContent(e.target.value)}
+            placeholder="Aggiungi una nota..."
+            rows={2}
+            className="border-[#E5E7EB] mb-2 text-sm"
+          />
+          <div className="flex justify-end">
+            <Button
+              onClick={addNote}
+              disabled={adding || !noteContent.trim()}
+              size="sm"
+              className="bg-[#E87A2E] hover:bg-[#D16A1E] text-white h-8"
+            >
+              <Send className="h-3.5 w-3.5 mr-1" />
+              Aggiungi Nota
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {activities.length === 0 ? (
+        <div className="py-8 text-center">
+          <Clock className="h-8 w-8 text-[#D1D5DB] mx-auto mb-2" />
+          <p className="text-sm text-[#9CA3AF]">Nessuna attività registrata</p>
+        </div>
+      ) : (
         <div className="space-y-0">
           {activities.map((activity, i) => {
             const Icon = activityIcons[activity.activity_type] || StickyNote;
             const isLast = i === activities.length - 1;
+            const initials = activity.user?.full_name
+              ?.split(" ")
+              .map((n: string) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2) || "?";
 
             return (
               <div key={activity.id} className="flex gap-3">
-                {/* Dot + line */}
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-[#1B2A4A]/10 shrink-0">
-                    <Icon className="h-4 w-4 text-[#1B2A4A]" />
-                  </div>
-                  {!isLast && (
-                    <div className="w-px flex-1 bg-gray-200 my-1" />
-                  )}
+                  <Avatar className="h-8 w-8 shrink-0">
+                    <AvatarFallback className="bg-[#F3F4F6] text-[#6B7280] text-[10px]">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  {!isLast && <div className="w-px flex-1 bg-[#E5E7EB] my-1" />}
                 </div>
 
-                {/* Content */}
-                <div className={`pb-4 ${isLast ? "" : ""}`}>
+                <div className="pb-4 min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-[#1B2A4A]">
+                    <Icon className="h-3.5 w-3.5 text-[#9CA3AF]" />
+                    <span className="text-xs font-medium text-[#6B7280]">
                       {activityLabels[activity.activity_type]}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {formatDateTime(activity.created_at)}
+                    <span className="text-[10px] text-[#9CA3AF]">
+                      {formatRelativeTime(activity.created_at)}
                     </span>
                   </div>
-                  <p className="text-sm text-foreground mt-0.5">
-                    {activity.title}
-                  </p>
+                  <p className="text-sm text-[#1A1A1A] mt-0.5">{activity.title}</p>
                   {activity.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {activity.description}
-                    </p>
+                    <p className="text-xs text-[#9CA3AF] mt-0.5">{activity.description}</p>
                   )}
                   {activity.user && (
-                    <p className="text-[10px] text-muted-foreground mt-1">
+                    <p className="text-[10px] text-[#9CA3AF] mt-1">
                       di {activity.user.full_name}
                     </p>
                   )}
@@ -114,7 +148,7 @@ export function DealTimeline({ activities }: DealTimelineProps) {
             );
           })}
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }

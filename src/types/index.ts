@@ -4,7 +4,29 @@
 
 export type UserRole = "admin" | "advisor" | "client" | "viewer";
 
-export type DealType = "buy_side" | "sell_side" | "advisory" | "valuation";
+export type PracticeArea =
+  | "debt_grant"
+  | "ma_capital_markets"
+  | "transformation"
+  | "individuals_patrimony"
+  | "corporate_protection"
+  | "communication"
+  | "public_affairs"
+  | "leaders_factory";
+
+export type DealType =
+  | "buy_side"
+  | "sell_side"
+  | "advisory"
+  | "valuation"
+  | "debt_advisory"
+  | "grant_funding"
+  | "transformation"
+  | "corporate_protection"
+  | "communication"
+  | "public_affairs"
+  | "leaders_factory"
+  | "patrimony";
 
 export type DealStatus =
   | "prospect"
@@ -47,6 +69,17 @@ export type FeeStatus = "pending" | "partial" | "paid" | "overdue";
 
 export type InvoiceEntity = "piva_forfettaria" | "assets_spa";
 
+export type CounterpartyRole = "buyer" | "investor" | "lender" | "partner" | "target";
+
+export type CounterpartyStatus =
+  | "contacted"
+  | "interested"
+  | "nda_signed"
+  | "in_dd"
+  | "offer_made"
+  | "declined"
+  | "closed";
+
 // ────────────────────────────────────────────────────────────
 // Table Types
 // ────────────────────────────────────────────────────────────
@@ -80,6 +113,10 @@ export interface Company {
   website: string | null;
   address: CompanyAddress | null;
   notes: string | null;
+  revenue: number | null;
+  ebitda: number | null;
+  net_debt: number | null;
+  fiscal_year: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -108,6 +145,8 @@ export interface Deal {
   deal_type: DealType;
   status: DealStatus;
   priority: DealPriority;
+  practice_area: PracticeArea | null;
+  sub_service: string | null;
   deal_value: number | null;
   success_fee_pct: number | null;
   success_fee_min: number | null;
@@ -183,6 +222,28 @@ export interface Task {
   updated_at: string;
 }
 
+export interface DealNote {
+  id: string;
+  deal_id: string;
+  user_id: string | null;
+  content: string;
+  is_pinned: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DealCounterparty {
+  id: string;
+  deal_id: string;
+  company_id: string | null;
+  contact_id: string | null;
+  role: CounterpartyRole | null;
+  status: CounterpartyStatus;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // ────────────────────────────────────────────────────────────
 // Composite / Joined Types
 // ────────────────────────────────────────────────────────────
@@ -190,4 +251,30 @@ export interface Task {
 export interface DealWithRelations extends Deal {
   company?: Company | null;
   deal_members?: (DealMember & { user?: User })[];
+}
+
+export interface DealCounterpartyWithRelations extends DealCounterparty {
+  company?: Company | null;
+  contact?: Contact | null;
+}
+
+export interface DealNoteWithUser extends DealNote {
+  user?: User | null;
+}
+
+export interface ContactWithCompany extends Contact {
+  company?: Company | null;
+}
+
+export interface SuccessFeeWithDeal extends SuccessFee {
+  deal?: DealWithRelations | null;
+}
+
+export interface ActivityWithUser extends Activity {
+  user?: User | null;
+}
+
+export interface TaskWithRelations extends Task {
+  deal?: Deal | null;
+  assigned_user?: User | null;
 }

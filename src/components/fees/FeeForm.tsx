@@ -136,7 +136,7 @@ export function FeeForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-[#1B2A4A]">
+          <DialogTitle className="text-[#1A1A1A]">
             {isEdit ? "Modifica Success Fee" : "Nuova Success Fee"}
           </DialogTitle>
         </DialogHeader>
@@ -262,7 +262,7 @@ export function FeeForm({
             <Button
               type="submit"
               disabled={loading}
-              className="bg-[#1B2A4A] hover:bg-[#253A5E]"
+              className="bg-[#E87A2E] hover:bg-[#D16A1E] text-white"
             >
               {loading
                 ? "Salvataggio..."

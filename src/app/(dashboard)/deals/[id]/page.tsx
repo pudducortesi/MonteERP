@@ -128,7 +128,7 @@ export default function DealDetailPage() {
                 {DEAL_PRIORITY_LABELS[deal.priority]}
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-[#1B2A4A] mt-1">
+            <h1 className="text-2xl font-bold text-[#1A1A1A] mt-1">
               {deal.title}
             </h1>
             {deal.company && (

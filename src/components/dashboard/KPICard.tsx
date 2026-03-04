@@ -1,4 +1,5 @@
-import { Card, CardContent } from "@/components/ui/card";
+"use client";
+
 import { cn } from "@/lib/utils";
 
 interface KPICardProps {
@@ -10,36 +11,53 @@ interface KPICardProps {
     value: string;
     positive: boolean;
   };
+  className?: string;
 }
 
-export function KPICard({ label, value, description, icon: Icon, trend }: KPICardProps) {
+export function KPICard({
+  label,
+  value,
+  description,
+  icon: Icon,
+  trend,
+  className,
+}: KPICardProps) {
   return (
-    <Card className="bg-white border-0 shadow-sm">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold text-[#1B2A4A]">{value}</p>
-            {description && (
-              <p className="text-xs text-muted-foreground">{description}</p>
-            )}
+    <div
+      className={cn(
+        "bg-white rounded-lg border border-[#E5E7EB] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] animate-fade-in",
+        className
+      )}
+    >
+      <div className="flex items-start justify-between">
+        <div className="space-y-2">
+          <p className="text-sm text-[#6B7280] font-medium">{label}</p>
+          <p className="text-2xl font-semibold text-[#1A1A1A] animate-count-up">
+            {value}
+          </p>
+          <div className="flex items-center gap-2">
             {trend && (
-              <p
+              <span
                 className={cn(
-                  "text-xs font-medium",
-                  trend.positive ? "text-green-600" : "text-red-600"
+                  "text-xs font-medium px-1.5 py-0.5 rounded",
+                  trend.positive
+                    ? "text-emerald-700 bg-emerald-50"
+                    : "text-red-700 bg-red-50"
                 )}
               >
                 {trend.positive ? "+" : ""}
                 {trend.value}
-              </p>
+              </span>
+            )}
+            {description && (
+              <span className="text-xs text-[#9CA3AF]">{description}</span>
             )}
           </div>
-          <div className="rounded-lg bg-[#1B2A4A]/10 p-2.5">
-            <Icon className="h-5 w-5 text-[#1B2A4A]" />
-          </div>
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-[#E87A2E]/10">
+          <Icon className="h-5 w-5 text-[#E87A2E]" />
+        </div>
+      </div>
+    </div>
   );
 }
