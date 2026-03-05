@@ -25,7 +25,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
       <SheetContent side="left" className="w-72 bg-white p-0 border-r border-[#E5E7EB]">
         <SheetHeader className="px-6 h-16 flex justify-center border-b border-[#E5E7EB]">
           <SheetTitle className="text-lg font-semibold tracking-[0.12em] text-[#E87A2E]">
-            PUDDU CORTESI
+            PATRIMONIO
           </SheetTitle>
         </SheetHeader>
 
@@ -59,7 +59,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 px-6 py-4 border-t border-[#E5E7EB]">
-          <p className="text-xs text-[#9CA3AF]">Gestionale Personale</p>
+          <p className="text-xs text-[#9CA3AF]">Wealth Tracker</p>
         </div>
       </SheetContent>
     </Sheet>

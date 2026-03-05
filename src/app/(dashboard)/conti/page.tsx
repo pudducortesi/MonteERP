@@ -21,61 +21,129 @@ import {
 } from "@/components/ui/select";
 import { Wallet, Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils/deal";
-import type { Account } from "@/types";
+import { formatCurrency } from "@/lib/utils/format";
+import type { AssetWithRelations, Entity } from "@/types";
 
+// ---------------------------------------------------------------------------
+// Default bank colours (used when metadata.bank_color is missing)
+// ---------------------------------------------------------------------------
 const BANK_COLORS: Record<string, string> = {
   BNL: "#009639",
   Sella: "#0066CC",
   Fideuram: "#1B3C73",
   Unicredit: "#E30613",
   AMEX: "#006FCF",
+  "Banca Generali": "#C8102E",
+  Mediolanum: "#003DA5",
+  Intesa: "#009B3A",
+  "Monte Paschi": "#005C3C",
 };
 
+function bankColor(asset: AssetWithRelations): string {
+  const meta = asset.metadata as Record<string, unknown> | null;
+  if (meta?.bank_color && typeof meta.bank_color === "string") return meta.bank_color;
+  const bank = (meta?.bank as string) ?? "";
+  return BANK_COLORS[bank] || "#6B7280";
+}
+
+function bankName(asset: AssetWithRelations): string {
+  const meta = asset.metadata as Record<string, unknown> | null;
+  return (meta?.bank as string) ?? "";
+}
+
 export default function ContiPage() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accounts, setAccounts] = useState<AssetWithRelations[]>([]);
+  const [entities, setEntities] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Dialogs
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  // Update balance
+  const [selectedAccount, setSelectedAccount] = useState<AssetWithRelations | null>(null);
   const [newBalance, setNewBalance] = useState("");
-  const [newAccountForm, setNewAccountForm] = useState({
+
+  // New account form
+  const [newForm, setNewForm] = useState({
     name: "",
     bank: "",
-    entity: "piva" as "piva" | "spa",
-    account_type: "checking",
+    entity_id: "",
+    initial_balance: "",
   });
+
   const supabase = createClient();
 
-  const fetchAccounts = useCallback(async () => {
-    const { data } = await supabase
-      .from("accounts")
-      .select("*")
-      .eq("is_active", true)
-      .order("sort_order");
-    if (data) setAccounts(data as Account[]);
+  // -----------------------------------------------------------------------
+  // Fetch
+  // -----------------------------------------------------------------------
+  const fetchData = useCallback(async () => {
+    const [assetsRes, entitiesRes] = await Promise.all([
+      supabase
+        .from("assets")
+        .select("*, entity:entities(*), asset_class:asset_classes(*)")
+        .eq("asset_class.name", "Conti Correnti")
+        .order("created_at"),
+      supabase
+        .from("entities")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order"),
+    ]);
+
+    if (assetsRes.data) {
+      // Filter out rows where asset_class join was null (name didn't match)
+      const filtered = (assetsRes.data as unknown as AssetWithRelations[]).filter(
+        (a) => a.asset_class !== null && a.asset_class !== undefined
+      );
+      setAccounts(filtered);
+    }
+    if (entitiesRes.data) setEntities(entitiesRes.data as Entity[]);
     setLoading(false);
   }, [supabase]);
 
   useEffect(() => {
-    fetchAccounts();
-  }, [fetchAccounts]);
+    fetchData();
+  }, [fetchData]);
 
-  const totalLiquidity = accounts.reduce((sum, a) => sum + (a.balance || 0), 0);
-  const pivaAccounts = accounts.filter((a) => a.entity === "piva");
-  const spaAccounts = accounts.filter((a) => a.entity === "spa");
+  // -----------------------------------------------------------------------
+  // Derived data
+  // -----------------------------------------------------------------------
+  const totalLiquidity = accounts.reduce((sum, a) => sum + (a.current_value || 0), 0);
 
+  // Group by entity
+  const grouped = accounts.reduce<Record<string, AssetWithRelations[]>>((acc, a) => {
+    const key = a.entity?.id ?? "__none__";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(a);
+    return acc;
+  }, {});
+
+  const entityOrder = Object.keys(grouped).sort((a, b) => {
+    const ea = entities.find((e) => e.id === a);
+    const eb = entities.find((e) => e.id === b);
+    return (ea?.sort_order ?? 999) - (eb?.sort_order ?? 999);
+  });
+
+  // -----------------------------------------------------------------------
+  // Handlers
+  // -----------------------------------------------------------------------
   async function handleUpdateBalance() {
     if (!selectedAccount) return;
-    const balance = parseFloat(newBalance.replace(",", "."));
-    if (isNaN(balance)) {
+    const value = parseFloat(newBalance.replace(",", "."));
+    if (isNaN(value)) {
       toast.error("Importo non valido");
       return;
     }
     const { error } = await supabase
-      .from("accounts")
-      .update({ balance, updated_at: new Date().toISOString() })
+      .from("assets")
+      .update({
+        current_value: value,
+        last_valued_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", selectedAccount.id);
+
     if (error) {
       toast.error("Errore nell'aggiornamento");
       return;
@@ -84,51 +152,95 @@ export default function ContiPage() {
     setUpdateDialogOpen(false);
     setSelectedAccount(null);
     setNewBalance("");
-    fetchAccounts();
+    fetchData();
   }
 
   async function handleCreateAccount() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
-    const color = BANK_COLORS[newAccountForm.bank] || "#6B7280";
-    const { error } = await supabase.from("accounts").insert({
+    if (!newForm.name || !newForm.bank) {
+      toast.error("Nome e banca sono obbligatori");
+      return;
+    }
+
+    // Resolve Conti Correnti asset class id
+    const { data: acData } = await supabase
+      .from("asset_classes")
+      .select("id")
+      .eq("name", "Conti Correnti")
+      .single();
+
+    if (!acData) {
+      toast.error("Asset class 'Conti Correnti' non trovata");
+      return;
+    }
+
+    const initialBalance = parseFloat(newForm.initial_balance.replace(",", ".")) || 0;
+    const color = BANK_COLORS[newForm.bank] || "#6B7280";
+
+    const { error } = await supabase.from("assets").insert({
       user_id: user.id,
-      name: newAccountForm.name,
-      bank: newAccountForm.bank,
-      entity: newAccountForm.entity,
-      account_type: newAccountForm.account_type,
-      color,
-      sort_order: accounts.length,
+      entity_id: newForm.entity_id || null,
+      asset_class_id: acData.id,
+      name: newForm.name,
+      current_value: initialBalance,
+      purchase_value: initialBalance,
+      currency: "EUR",
+      is_liquid: true,
+      is_liability: false,
+      metadata: { bank: newForm.bank, bank_color: color },
     });
+
     if (error) {
       toast.error("Errore nella creazione");
       return;
     }
     toast.success("Conto creato");
-    setDialogOpen(false);
-    setNewAccountForm({ name: "", bank: "", entity: "piva", account_type: "checking" });
-    fetchAccounts();
+    setCreateDialogOpen(false);
+    setNewForm({ name: "", bank: "", entity_id: "", initial_balance: "" });
+    fetchData();
   }
 
-  function renderAccountCard(account: Account) {
-    const borderColor = account.color || BANK_COLORS[account.bank] || "#E5E7EB";
-    const balance = account.balance || 0;
+  // -----------------------------------------------------------------------
+  // Account card
+  // -----------------------------------------------------------------------
+  function renderAccountCard(account: AssetWithRelations) {
+    const color = bankColor(account);
+    const bank = bankName(account);
+    const balance = account.current_value ?? 0;
 
     return (
       <div
         key={account.id}
         className="bg-white rounded-lg border border-[#E5E7EB] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow"
-        style={{ borderLeftWidth: 4, borderLeftColor: borderColor }}
+        style={{ borderLeftWidth: 4, borderLeftColor: color }}
       >
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider" style={{ color: borderColor }}>
-              {account.bank}
+            {bank && (
+              <p
+                className="text-[11px] font-medium uppercase tracking-wider"
+                style={{ color }}
+              >
+                {bank}
+              </p>
+            )}
+            <p className="text-sm font-medium text-[#1A1A1A] mt-0.5">
+              {account.name}
             </p>
-            <p className="text-sm font-medium text-[#1A1A1A] mt-0.5">{account.name}</p>
           </div>
-          <p className={`text-lg font-semibold ${balance > 0 ? "text-[#4ECDC4]" : balance < 0 ? "text-[#FF6B6B]" : "text-[#9CA3AF]"}`}>
+          <p
+            className={`text-lg font-semibold ${
+              balance > 0
+                ? "text-[#4ECDC4]"
+                : balance < 0
+                ? "text-[#FF6B6B]"
+                : "text-[#9CA3AF]"
+            }`}
+          >
             {balance === 0 ? "—" : formatCurrency(balance)}
           </p>
         </div>
@@ -139,7 +251,7 @@ export default function ContiPage() {
             className="text-xs text-[#6B7280] hover:text-[#E87A2E]"
             onClick={() => {
               setSelectedAccount(account);
-              setNewBalance(String(account.balance || 0).replace(".", ","));
+              setNewBalance(String(balance).replace(".", ","));
               setUpdateDialogOpen(true);
             }}
           >
@@ -151,69 +263,98 @@ export default function ContiPage() {
     );
   }
 
+  // -----------------------------------------------------------------------
+  // Loading skeleton
+  // -----------------------------------------------------------------------
   if (loading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-6 w-64" />
         <div className="grid gap-4 sm:grid-cols-2">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28" />)}
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
         </div>
       </div>
     );
   }
 
+  // -----------------------------------------------------------------------
+  // Render
+  // -----------------------------------------------------------------------
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1A1A1A]">Conti Bancari</h1>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A]">
+            Conti Bancari
+          </h1>
           <p className="text-sm text-[#6B7280]">
-            Liquidità totale: <span className={`font-semibold ${totalLiquidity >= 0 ? "text-[#4ECDC4]" : "text-[#FF6B6B]"}`}>{formatCurrency(totalLiquidity)}</span>
+            Liquidità totale:{" "}
+            <span
+              className={`font-semibold ${
+                totalLiquidity >= 0 ? "text-[#4ECDC4]" : "text-[#FF6B6B]"
+              }`}
+            >
+              {formatCurrency(totalLiquidity)}
+            </span>
           </p>
         </div>
         <Button
           size="sm"
           className="bg-[#E87A2E] hover:bg-[#D16A1E] text-white"
-          onClick={() => setDialogOpen(true)}
+          onClick={() => setCreateDialogOpen(true)}
         >
           <Plus className="h-4 w-4 mr-1" />
           Nuovo Conto
         </Button>
       </div>
 
-      {/* P.IVA Forfettaria */}
-      <div>
-        <h2 className="text-sm font-semibold text-[#1A1A1A] mb-3 flex items-center gap-2">
-          <Wallet className="h-4 w-4 text-[#E87A2E]" />
-          P.IVA Forfettaria
-        </h2>
-        {pivaAccounts.length > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {pivaAccounts.map(renderAccountCard)}
-          </div>
-        ) : (
-          <p className="text-sm text-[#9CA3AF] py-4">Nessun conto per P.IVA Forfettaria</p>
-        )}
-      </div>
+      {/* Entity groups */}
+      {entityOrder.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-lg border border-[#E5E7EB]">
+          <Wallet className="h-8 w-8 text-[#D1D5DB] mb-2" />
+          <p className="text-sm text-[#9CA3AF]">Nessun conto registrato</p>
+          <p className="text-xs text-[#9CA3AF] mt-1">
+            Aggiungi il tuo primo conto corrente
+          </p>
+        </div>
+      )}
 
-      {/* Assets SpA */}
-      <div>
-        <h2 className="text-sm font-semibold text-[#1A1A1A] mb-3 flex items-center gap-2">
-          <Wallet className="h-4 w-4 text-[#E87A2E]" />
-          Assets SpA
-        </h2>
-        {spaAccounts.length > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {spaAccounts.map(renderAccountCard)}
-          </div>
-        ) : (
-          <p className="text-sm text-[#9CA3AF] py-4">Nessun conto per Assets SpA</p>
-        )}
-      </div>
+      {entityOrder.map((entityId) => {
+        const groupAccounts = grouped[entityId];
+        const entity = entities.find((e) => e.id === entityId);
+        const entityName = entity?.name ?? "Senza Entità";
+        const entityTotal = groupAccounts.reduce(
+          (sum, a) => sum + (a.current_value ?? 0),
+          0
+        );
 
-      {/* Update Balance Dialog */}
+        return (
+          <div key={entityId}>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-[#1A1A1A] flex items-center gap-2">
+                <Wallet className="h-4 w-4 text-[#E87A2E]" />
+                {entityName}
+              </h2>
+              <span
+                className={`text-sm font-semibold ${
+                  entityTotal >= 0 ? "text-[#4ECDC4]" : "text-[#FF6B6B]"
+                }`}
+              >
+                {formatCurrency(entityTotal)}
+              </span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {groupAccounts.map(renderAccountCard)}
+            </div>
+          </div>
+        );
+      })}
+
+      {/* ── Update Balance Dialog ───────────────────────────────── */}
       <Dialog open={updateDialogOpen} onOpenChange={setUpdateDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -221,7 +362,7 @@ export default function ContiPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-[#6B7280]">
-              {selectedAccount?.bank} — {selectedAccount?.name}
+              {bankName(selectedAccount!)} — {selectedAccount?.name}
             </p>
             <div>
               <Label>Nuovo saldo (€)</Label>
@@ -242,8 +383,8 @@ export default function ContiPage() {
         </DialogContent>
       </Dialog>
 
-      {/* New Account Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* ── New Account Dialog ──────────────────────────────────── */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Nuovo Conto</DialogTitle>
@@ -252,17 +393,21 @@ export default function ContiPage() {
             <div>
               <Label>Nome conto</Label>
               <Input
-                value={newAccountForm.name}
-                onChange={(e) => setNewAccountForm({ ...newAccountForm, name: e.target.value })}
-                placeholder="es. BNL CC"
+                value={newForm.name}
+                onChange={(e) =>
+                  setNewForm({ ...newForm, name: e.target.value })
+                }
+                placeholder="es. Conto Principale"
                 className="mt-1"
               />
             </div>
             <div>
               <Label>Banca</Label>
               <Input
-                value={newAccountForm.bank}
-                onChange={(e) => setNewAccountForm({ ...newAccountForm, bank: e.target.value })}
+                value={newForm.bank}
+                onChange={(e) =>
+                  setNewForm({ ...newForm, bank: e.target.value })
+                }
                 placeholder="es. BNL"
                 className="mt-1"
               />
@@ -270,38 +415,38 @@ export default function ContiPage() {
             <div>
               <Label>Entità</Label>
               <Select
-                value={newAccountForm.entity}
-                onValueChange={(v) => setNewAccountForm({ ...newAccountForm, entity: v as "piva" | "spa" })}
+                value={newForm.entity_id}
+                onValueChange={(v) =>
+                  setNewForm({ ...newForm, entity_id: v })
+                }
               >
                 <SelectTrigger className="mt-1">
-                  <SelectValue />
+                  <SelectValue placeholder="Seleziona entità..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="piva">P.IVA Forfettaria</SelectItem>
-                  <SelectItem value="spa">Assets SpA</SelectItem>
+                  {entities.map((e) => (
+                    <SelectItem key={e.id} value={e.id}>
+                      {e.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Tipo conto</Label>
-              <Select
-                value={newAccountForm.account_type}
-                onValueChange={(v) => setNewAccountForm({ ...newAccountForm, account_type: v })}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="checking">Conto Corrente</SelectItem>
-                  <SelectItem value="credit_card">Carta di Credito</SelectItem>
-                  <SelectItem value="investment">Investimento</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Saldo iniziale (€)</Label>
+              <Input
+                value={newForm.initial_balance}
+                onChange={(e) =>
+                  setNewForm({ ...newForm, initial_balance: e.target.value })
+                }
+                placeholder="0,00"
+                className="mt-1"
+              />
             </div>
             <Button
               className="w-full bg-[#E87A2E] hover:bg-[#D16A1E] text-white"
               onClick={handleCreateAccount}
-              disabled={!newAccountForm.name || !newAccountForm.bank}
+              disabled={!newForm.name || !newForm.bank}
             >
               Crea Conto
             </Button>

@@ -4,21 +4,22 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   CommandDialog,
-  CommandInput,
-  CommandList,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
-import { BarChart3, Building2, UserRound } from "lucide-react";
+import { Landmark, Wallet, Home, TrendingUp, CreditCard } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { formatCurrency } from "@/lib/utils/format";
 
 interface SearchResult {
   id: string;
-  label: string;
+  name: string;
+  type: "asset" | "entity" | "liability";
   subtitle?: string;
-  href: string;
-  type: "deal" | "company" | "contact";
+  value?: number;
 }
 
 interface GlobalSearchProps {
@@ -27,73 +28,55 @@ interface GlobalSearchProps {
 }
 
 export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
-  const router = useRouter();
-  const [results, setResults] = useState<SearchResult[]>([]);
   const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        onOpenChange(!open);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, [open, onOpenChange]);
 
   const search = useCallback(
     async (q: string) => {
-      if (!q || q.length < 2) {
+      if (q.length < 2) {
         setResults([]);
         return;
       }
-
-      const supabase = createClient();
       const pattern = `%${q}%`;
 
-      const [dealsRes, companiesRes, contactsRes] = await Promise.all([
-        supabase
-          .from("deals")
-          .select("id, code, title")
-          .or(`title.ilike.${pattern},code.ilike.${pattern}`)
-          .limit(5),
-        supabase
-          .from("companies")
-          .select("id, name, sector")
-          .ilike("name", pattern)
-          .limit(5),
-        supabase
-          .from("contacts")
-          .select("id, full_name, email")
-          .or(`full_name.ilike.${pattern},email.ilike.${pattern}`)
-          .limit(5),
+      const [assetsRes, entitiesRes, liabilitiesRes] = await Promise.all([
+        supabase.from("assets").select("id, name, current_value, description").ilike("name", pattern).limit(5),
+        supabase.from("entities").select("id, name, type").ilike("name", pattern).limit(5),
+        supabase.from("liabilities").select("id, name, current_balance, lender").ilike("name", pattern).limit(5),
       ]);
 
       const items: SearchResult[] = [];
-
-      dealsRes.data?.forEach((d) => {
-        items.push({
-          id: d.id,
-          label: d.title,
-          subtitle: d.code || undefined,
-          href: `/pipeline/${d.id}`,
-          type: "deal",
-        });
-      });
-
-      companiesRes.data?.forEach((c) => {
-        items.push({
-          id: c.id,
-          label: c.name,
-          subtitle: c.sector || undefined,
-          href: `/crm/companies/${c.id}`,
-          type: "company",
-        });
-      });
-
-      contactsRes.data?.forEach((c) => {
-        items.push({
-          id: c.id,
-          label: c.full_name,
-          subtitle: c.email || undefined,
-          href: `/crm/contacts`,
-          type: "contact",
-        });
-      });
-
+      if (assetsRes.data) {
+        for (const a of assetsRes.data) {
+          items.push({ id: a.id, name: a.name, type: "asset", subtitle: a.description || undefined, value: a.current_value });
+        }
+      }
+      if (entitiesRes.data) {
+        for (const e of entitiesRes.data) {
+          items.push({ id: e.id, name: e.name, type: "entity", subtitle: e.type });
+        }
+      }
+      if (liabilitiesRes.data) {
+        for (const l of liabilitiesRes.data) {
+          items.push({ id: l.id, name: l.name, type: "liability", subtitle: l.lender || undefined, value: l.current_balance });
+        }
+      }
       setResults(items);
     },
-    []
+    [supabase]
   );
 
   useEffect(() => {
@@ -101,114 +84,55 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     return () => clearTimeout(timer);
   }, [query, search]);
 
-  useEffect(() => {
-    if (!open) {
-      setQuery("");
-      setResults([]);
-    }
-  }, [open]);
-
-  // Keyboard shortcut
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        onOpenChange(!open);
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [open, onOpenChange]);
-
-  function handleSelect(href: string) {
+  function handleSelect(item: SearchResult) {
     onOpenChange(false);
-    router.push(href);
+    setQuery("");
+    if (item.type === "asset") router.push("/patrimonio");
+    else if (item.type === "entity") router.push("/patrimonio");
+    else if (item.type === "liability") router.push("/debiti");
   }
 
-  const deals = results.filter((r) => r.type === "deal");
-  const companies = results.filter((r) => r.type === "company");
-  const contacts = results.filter((r) => r.type === "contact");
+  const iconMap = {
+    asset: TrendingUp,
+    entity: Landmark,
+    liability: CreditCard,
+  };
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput
-        placeholder="Cerca deal, aziende, contatti..."
+        placeholder="Cerca asset, entità, debiti..."
         value={query}
         onValueChange={setQuery}
       />
       <CommandList>
-        <CommandEmpty>
-          {query.length < 2
-            ? "Digita almeno 2 caratteri per cercare..."
-            : "Nessun risultato trovato."}
-        </CommandEmpty>
-
-        {deals.length > 0 && (
-          <CommandGroup heading="Deal">
-            {deals.map((item) => (
-              <CommandItem
-                key={item.id}
-                value={item.label}
-                onSelect={() => handleSelect(item.href)}
-                className="cursor-pointer"
-              >
-                <BarChart3 className="mr-2 h-4 w-4 text-[#E87A2E]" />
-                <div className="flex flex-col">
-                  <span className="text-sm">{item.label}</span>
-                  {item.subtitle && (
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {item.subtitle}
+        <CommandEmpty>Nessun risultato trovato.</CommandEmpty>
+        {results.length > 0 && (
+          <CommandGroup heading="Risultati">
+            {results.map((item) => {
+              const Icon = iconMap[item.type];
+              return (
+                <CommandItem
+                  key={`${item.type}-${item.id}`}
+                  value={`${item.name} ${item.subtitle || ""}`}
+                  onSelect={() => handleSelect(item)}
+                  className="flex items-center gap-3 py-2"
+                >
+                  <Icon className="h-4 w-4 text-[#6B7280] shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#1A1A1A] truncate">{item.name}</p>
+                    {item.subtitle && (
+                      <p className="text-xs text-[#9CA3AF] truncate">{item.subtitle}</p>
+                    )}
+                  </div>
+                  {item.value != null && (
+                    <span className="text-xs text-[#6B7280] whitespace-nowrap">
+                      {formatCurrency(item.value)}
                     </span>
                   )}
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
-
-        {companies.length > 0 && (
-          <CommandGroup heading="Aziende">
-            {companies.map((item) => (
-              <CommandItem
-                key={item.id}
-                value={item.label}
-                onSelect={() => handleSelect(item.href)}
-                className="cursor-pointer"
-              >
-                <Building2 className="mr-2 h-4 w-4 text-[#1A1A1A]" />
-                <div className="flex flex-col">
-                  <span className="text-sm">{item.label}</span>
-                  {item.subtitle && (
-                    <span className="text-xs text-muted-foreground">
-                      {item.subtitle}
-                    </span>
-                  )}
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
-
-        {contacts.length > 0 && (
-          <CommandGroup heading="Contatti">
-            {contacts.map((item) => (
-              <CommandItem
-                key={item.id}
-                value={item.label}
-                onSelect={() => handleSelect(item.href)}
-                className="cursor-pointer"
-              >
-                <UserRound className="mr-2 h-4 w-4 text-[#1A1A1A]" />
-                <div className="flex flex-col">
-                  <span className="text-sm">{item.label}</span>
-                  {item.subtitle && (
-                    <span className="text-xs text-muted-foreground">
-                      {item.subtitle}
-                    </span>
-                  )}
-                </div>
-              </CommandItem>
-            ))}
+                </CommandItem>
+              );
+            })}
           </CommandGroup>
         )}
       </CommandList>

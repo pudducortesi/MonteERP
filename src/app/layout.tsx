@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Montesino Gestionale",
-  description: "Sistema gestionale integrato — Montesino S.p.A. Società Benefit",
+  title: "Patrimonio — Wealth Tracker",
+  description: "La tua piattaforma personale di wealth management",
 };
 
 export default function RootLayout({

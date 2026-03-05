@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  Landmark,
   Wallet,
-  Briefcase,
-  Receipt,
+  Home,
   TrendingUp,
-  Target,
-  Calendar,
-  Users,
+  CreditCard,
+  ArrowLeftRight,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { User } from "@/types";
@@ -23,13 +23,13 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
+  { label: "Patrimonio", href: "/patrimonio", icon: Landmark },
   { label: "Conti", href: "/conti", icon: Wallet },
-  { label: "Mandati", href: "/mandati", icon: Briefcase },
-  { label: "Spese", href: "/spese", icon: Receipt },
+  { label: "Immobili", href: "/immobili", icon: Home },
   { label: "Investimenti", href: "/investimenti", icon: TrendingUp },
-  { label: "Forecast", href: "/forecast", icon: Target },
-  { label: "Calendario", href: "/calendar", icon: Calendar },
-  { label: "Contatti", href: "/contatti", icon: Users },
+  { label: "Debiti", href: "/debiti", icon: CreditCard },
+  { label: "Movimenti", href: "/movimenti", icon: ArrowLeftRight },
+  { label: "Impostazioni", href: "/impostazioni", icon: Settings },
 ];
 
 interface SidebarProps {
@@ -42,19 +42,17 @@ export function Sidebar({ user }: SidebarProps) {
 
   return (
     <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-[#FAFAFA] border-r border-[#E5E7EB] min-h-screen">
-      {/* Logo */}
       <div className="flex flex-col h-16 px-6 justify-center border-b border-[#E5E7EB]">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-lg font-semibold tracking-[0.12em] text-[#E87A2E]">
-            PUDDU CORTESI
+            PATRIMONIO
           </span>
         </Link>
         <span className="text-[10px] text-[#6B7280] tracking-wider uppercase -mt-0.5">
-          Gestionale
+          Wealth Tracker
         </span>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
         {navItems.map((item) => {
           const isActive =
@@ -83,20 +81,22 @@ export function Sidebar({ user }: SidebarProps) {
         })}
       </nav>
 
-      {/* User Footer */}
       {user && (
         <div className="px-4 py-3 border-t border-[#E5E7EB]">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center h-8 w-8 rounded-full bg-[#E87A2E] text-white text-xs font-medium">
-              RC
+              {user.full_name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-[#1A1A1A] truncate">
                 {user.full_name}
               </p>
-              <p className="text-[10px] text-[#9CA3AF]">
-                Advisor M&A
-              </p>
+              <p className="text-[10px] text-[#9CA3AF]">Wealth Tracker</p>
             </div>
           </div>
         </div>
