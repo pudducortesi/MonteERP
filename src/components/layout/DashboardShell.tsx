@@ -30,7 +30,6 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
         <Header
           user={user}
           onMenuClick={() => setMobileOpen(true)}
-          onSearchClick={() => setSearchOpen(true)}
         />
         <main className="flex-1 bg-[#FAFAFA] p-4 lg:p-6">{children}</main>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Menu, Search, LogOut, User as UserIcon } from "lucide-react";
+import { Menu, LogOut, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,10 +18,10 @@ import type { User } from "@/types";
 interface HeaderProps {
   user: User;
   onMenuClick: () => void;
-  onSearchClick: () => void;
+  onSearchClick?: () => void;
 }
 
-export function Header({ user, onMenuClick, onSearchClick }: HeaderProps) {
+export function Header({ user, onMenuClick }: HeaderProps) {
   const router = useRouter();
 
   async function handleLogout() {
@@ -40,7 +40,6 @@ export function Header({ user, onMenuClick, onSearchClick }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-30 flex items-center h-14 gap-4 border-b border-[#E5E7EB] bg-white px-4 lg:px-6">
-      {/* Mobile menu button */}
       <Button
         variant="ghost"
         size="icon"
@@ -51,21 +50,9 @@ export function Header({ user, onMenuClick, onSearchClick }: HeaderProps) {
         <span className="sr-only">Apri menu</span>
       </Button>
 
-      {/* Search trigger */}
-      <button
-        onClick={onSearchClick}
-        className="flex-1 max-w-md flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-sm text-[#6B7280] hover:border-[#D1D5DB] transition-colors cursor-pointer"
-      >
-        <Search className="h-4 w-4 shrink-0" />
-        <span className="hidden sm:inline">Cerca mandati, contatti...</span>
-        <span className="sm:hidden">Cerca...</span>
-        <kbd className="hidden md:inline-flex ml-auto items-center gap-0.5 rounded border border-[#E5E7EB] bg-[#F9FAFB] px-1.5 py-0.5 text-[10px] font-mono text-[#9CA3AF]">
-          <span className="text-xs">⌘</span>K
-        </kbd>
-      </button>
+      <div className="flex-1" />
 
       <div className="flex items-center gap-1">
-        {/* User dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 px-2 h-9">
@@ -77,7 +64,7 @@ export function Header({ user, onMenuClick, onSearchClick }: HeaderProps) {
               <div className="hidden md:flex md:flex-col md:items-start">
                 <span className="text-sm font-medium text-[#1A1A1A]">{user.full_name}</span>
                 <span className="text-[11px] text-[#6B7280] leading-none">
-                  Advisor M&A
+                  Wealth Tracker
                 </span>
               </div>
             </Button>
